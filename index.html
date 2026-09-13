@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enactus Arcade Challenge</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #001f3f; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        
+        .quiz-card { 
+            background: #002B49; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 12px 30px rgba(0,0,0,0.6); 
+            width: 100%; 
+            max-width: 520px; 
+            text-align: center; 
+            border: 4px solid #FFC20E; 
+            position: relative; 
+            overflow: hidden;
+        }
+
+        /* Langues */
+        .lang-switch { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; direction: ltr !important; }
+        .lang-btn { background: transparent; color: #FFC20E; border: 1px solid #FFC20E; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; }
+        .lang-btn.active, .lang-btn:hover { background: #FFC20E; color: #002B49; }
+
+        /* Logo - SANS ARRIÈRE-PLAN */
+        .logo-container { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin-bottom: 15px; 
+            background: transparent;
+        }
+        .logo-container img { 
+            max-width: 180px; 
+            height: auto; 
+            background: transparent;
+            mix-blend-mode: lighten;
+            filter: brightness(1.1);
+        }
+
+        h1 { color: #FFC20E; margin-bottom: 5px; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { font-size: 14px; font-weight: normal; margin-bottom: 20px; opacity: 0.9; }
+
+        /* Timer & Progress Bar */
+        .timer-container { width: 100%; background: #001f3f; height: 12px; border-radius: 6px; margin-bottom: 15px; overflow: hidden; border: 1px solid #FFC20E; }
+        .timer-bar { width: 100%; height: 100%; background: #FFC20E; transition: width 1s linear; }
+
+        .btn { background: #FFC20E; color: #002B49; font-weight: bold; border: none; padding: 14px 24px; border-radius: 10px; cursor: pointer; font-size: 16px; transition: 0.2s; width: 100%; margin-top: 15px; box-shadow: 0 4px 10px rgba(255, 194, 14, 0.3); }
+        .btn:hover { background: #ffe066; transform: translateY(-2px); }
+
+        .option-btn { background: #003e6b; color: #fff; border: 2px solid #005696; text-align: inherit; margin-bottom: 10px; padding: 12px; font-size: 15px; width: 100%; border-radius: 10px; transition: 0.2s; }
+        .option-btn:hover { background: #005696; border-color: #FFC20E; }
+
+        input { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #FFC20E; background: #001f3f; color: #fff; font-size: 14px; text-align: inherit; }
+
+        .result-box { font-size: 20px; font-weight: bold; margin: 20px 0; padding: 15px; border-radius: 10px; }
+        .win { background: rgba(46, 204, 113, 0.25); color: #2ecc71; border: 2px solid #2ecc71; animation: pulse 1s infinite alternate; }
+        .consolation { background: rgba(255, 194, 14, 0.25); color: #FFC20E; border: 2px solid #FFC20E; }
+
+        /* Progression */
+        .progress-info { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 10px; 
+            font-size: 13px; 
+            color: #FFC20E; 
+            font-weight: bold;
+        }
+
+        .hidden { display: none !important; }
+        [dir="rtl"] { text-align: right; }
+        [dir="rtl"] .quiz-card { text-align: right; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.03); }
+        }
+
+        /* Animation pour le logo */
+        .logo-container img {
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes logoGlow {
+            0%, 100% { filter: brightness(1.1) drop-shadow(0 0 5px rgba(255, 194, 14, 0.3)); }
+            50% { filter: brightness(1.2) drop-shadow(0 0 15px rgba(255, 194, 14, 0.6)); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+    <!-- Choix de la Langue -->
+    <div class="lang-switch">
+        <button class="lang-btn active" id="btn-lang-fr" onclick="changeLanguage('fr')">FR</button>
+        <button class="lang-btn" id="btn-lang-ar" onclick="changeLanguage('ar')">العربية</button>
+        <button class="lang-btn" id="btn-lang-en" onclick="changeLanguage('en')">EN</button>
+    </div>
+
+    <!-- Logo SANS ARRIÈRE-PLAN -->
+    <div class="logo-container">
+        <img src="logo.png" alt="Enactus ENSA Berrechid" id="logo-img">
+    </div>
+
+    <!-- ÉCRAN 1 : INSCRIPTION -->
+    <div id="step-intro">
+        <h1 id="txt-title">ENACTUS ARCADE CHALLENGE</h1>
+        <h2 id="txt-subtitle">🎮 60 Secondes & 10 Questions pour décrocher le Grand Package !</h2>
+        <input type="text" id="userName" placeholder="Ton Prénom et Nom">
+        <input type="text" id="userFiliere" placeholder="Ta Filière (ex: GI, AP...)">
+        <button class="btn" id="btn-start" onclick="startQuiz()">LANCER LE JEU 🚀</button>
+    </div>
+
+    <!-- ÉCRAN 2 : QUESTIONNAIRE & CHRONO -->
+    <div id="step-quiz" class="hidden">
+        <div class="progress-info">
+            <span id="progress-text">Question 1/10</span>
+            <span id="score-display">Score: 0</span>
+        </div>
+        <div class="timer-container">
+            <div class="timer-bar" id="timer-bar"></div>
+        </div>
+        <div style="font-weight: bold; color: #FFC20E; margin-bottom: 10px;" id="timer-text">⏱️ 60s</div>
+        <h3 id="question-text" style="font-size: 17px; margin-bottom: 15px;">Question</h3>
+        <div id="options-container"></div>
+    </div>
+
+    <!-- ÉCRAN 3 : RÉSULTAT -->
+    <div id="step-result" class="hidden">
+        <h2 id="txt-result-title">Fin du Challenge !</h2>
+        <div id="result-message" class="result-box"></div>
+        <p id="reward-text" style="font-size: 16px; line-height: 1.4;"></p>
+        <button class="btn" id="btn-next" onclick="resetQuiz()">JOUEUR SUIVANT 🔄</button>
+    </div>
+</div>
+
+<script>
+    var currentLang = 'fr';
+    var currentQ = 0;
+    var score = 0;
+    var timeLeft = 60;  // ⏱️ Augmenté à 60 secondes
+    var timerInterval = null;
+    var TOTAL_TIME = 60;  // Total du temps
+    var TOTAL_QUESTIONS = 10;  // Nombre total de questions
+
+    // Synthèse sonore Web Audio API
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playBeep(freq, type, duration) {
+        try {
+            var osc = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+            osc.type = type || 'sine';
+            osc.frequency.value = freq;
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+            osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    function playWinSound() {
+        playBeep(523.25, 'triangle', 0.15);
+        setTimeout(function(){ playBeep(659.25, 'triangle', 0.15); }, 150);
+        setTimeout(function(){ playBeep(783.99, 'triangle', 0.15); }, 300);
+        setTimeout(function(){ playBeep(1046.50, 'triangle', 0.4); }, 450);
+    }
+
+    function playLoseSound() {
+        playBeep(300, 'sawtooth', 0.2);
+        setTimeout(function(){ playBeep(200, 'sawtooth', 0.4); }, 200);
+    }
+
+    function playCorrectSound() {
+        playBeep(800, 'sine', 0.1);
+        setTimeout(function(){ playBeep(1200, 'sine', 0.15); }, 100);
+    }
+
+    function playWrongSound() {
+        playBeep(250, 'square', 0.2);
+    }
+
+    var quizData = {
+        fr: {
+            dir: 'ltr',
+            title: 'ENACTUS ARCADE CHALLENGE',
+            subtitle: '🎮 60 Secondes & 10 Questions pour décrocher le Grand Package (8/10 min) !',
+            namePH: 'Ton Prénom et Nom',
+            filierePH: 'Ta Filière (ex: GI, AP...)',
+            btnStart: 'LANCER LE JEU 🚀',
+            resultTitle: 'Fin du Challenge !',
+            btnNext: 'JOUEUR SUIVANT 🔄',
+            winMsg: '🏆 VICTOIRE BINGO ! Score : ',
+            consoMsg: '👏 BEL ESSAI ! Score : ',
+            timeOutMsg: '⏰ TEMPS ÉCOULÉ ! Score : ',
+            winReward: '🎁 Tu gagnes le GRAND PACKAGE ENACTUS (Bimo + Bonbons + Sticker) !',
+            consoReward: '🍬 Tu gagnes le MINI PACKAGE ENACTUS (Bonbon + Sticker) !',
+            alertMsg: 'Veuillez remplir votre nom et votre filière !',
+            progressText: 'Question ',
+            scoreText: 'Score: ',
+            questions: [
+                // === CULTURE GÉNÉRALE ===
+                { q: "1. Quelle est la capitale de l'Australie ?", options: ["Sydney", "Melbourne", "Canberra", "Perth"], answer: 2 },
+                { q: "2. Combien de continents y a-t-il sur Terre ?", options: ["5", "6", "7", "8"], answer: 2 },
+                
+                // === FOOTBALL ===
+                { q: "3. Qui a remporté la Coupe du Monde 2022 ?", options: ["France", "Brésil", "Argentine", "Allemagne"], answer: 2 },
+                { q: "4. Combien de joueurs dans une équipe de football sur le terrain ?", options: ["9", "10", "11", "12"], answer: 2 },
+                { q: "5. Quel pays a remporté le plus de Coupes du Monde ?", options: ["Allemagne", "Italie", "Brésil", "Argentine"], answer: 2 },
+                
+                // === ENACTUS ===
+                { q: "6. Que signifie le terme 'ENACTUS' ?", options: ["Entrepreneurship - Action - Us", "Énergie - Action - Université", "Entreprise - Activité - Social", "Éducation - Action - Université"], answer: 0 },
+                { q: "7. Quel est l'objectif principal d'Enactus ?", options: ["Créer des jeux vidéo", "Résoudre des problèmes sociaux et environnementaux", "Organiser uniquement des fêtes", "Faire du profit uniquement"], answer: 1 },
+                
+                // === CULTURE GÉNÉRALE 2 ===
+                { q: "8. Quel est le plus grand océan du monde ?", options: ["Atlantique", "Indien", "Arctique", "Pacifique"], answer: 3 },
+                { q: "9. Qui a peint la Joconde ?", options: ["Michel-Ange", "Léonard de Vinci", "Pablo Picasso", "Vincent van Gogh"], answer: 1 },
+                
+                // === QUESTION FUN ===
+                { q: "10. Quelle est la meilleure équipe pour concrétiser tes idées cette année ?", options: ["Enactus ENSA Berrechid bien sûr ! 💛", "Enactus ENSA Berrechid évidemment ! 🚀", "Enactus ENSA Berrechid absolument ! ⭐", "Toutes les réponses sont correctes 😉"], answer: 3 }
+            ]
+        },
+        ar: {
+            dir: 'rtl',
+            title: 'تحدي إيناكتوس آركيد',
+            subtitle: '🎮 60 ثانية و 10 أسئلة باش تربح الـ Grand Package (8/10 على الأقل) !',
+            namePH: 'الاسم الكامل',
+            filierePH: 'الشعبة (مثال: GI, AP...)',
+            btnStart: 'ابدأ اللعبة 🚀',
+            resultTitle: 'نهاية التحدي !',
+            btnNext: 'المشارك التالي 🔄',
+            winMsg: '🏆 فوز رائع ! النتيجة : ',
+            consoMsg: '👏 محاولة جيدة ! النتيجة : ',
+            timeOutMsg: '⏰ انتهى الوقت ! النتيجة : ',
+            winReward: '🎁 ربحتي الـ GRAND PACKAGE (بيمو + حلوى + ستيكر) !',
+            consoReward: '🍬 ربحتي الـ MINI PACKAGE (حلوى + ستيكر) !',
+            alertMsg: 'المرجو إدخال الاسم والشعبة !',
+            progressText: 'السؤال ',
+            scoreText: 'النتيجة: ',
+            questions: [
+                // === ثقافة عامة ===
+                { q: "1. ما هي عاصمة أستراليا ؟", options: ["سيدني", "ملبورن", "كانبرا", "بيرث"], answer: 2 },
+                { q: "2. كم عدد القارات في العالم ؟", options: ["5", "6", "7", "8"], answer: 2 },
+                
+                // === كرة القدم ===
+                { q: "3. من فاز بكأس العالم 2022 ؟", options: ["فرنسا", "البرازيل", "الأرجنتين", "ألمانيا"], answer: 2 },
+                { q: "4. كم عدد اللاعبين في فريق كرة القدم داخل الملعب ؟", options: ["9", "10", "11", "12"], answer: 2 },
+                { q: "5. أي دولة فازت بأكبر عدد من كؤوس العالم ؟", options: ["ألمانيا", "إيطاليا", "البرازيل", "الأرجنتين"], answer: 2 },
+                
+                // === إيناكتوس ===
+                { q: "6. ماذا يعني مصطلح 'ENACTUS' ؟", options: ["Entrepreneurship - Action - Us", "Energy - Action - University", "Enterprise - Activity - Social", "Education - Action - University"], answer: 0 },
+                { q: "7. ما هو الهدف الرئيسي لمشاريع إيناكتوس ؟", options: ["تطوير ألعاب الفيديو", "حل المشاكل الاجتماعية والبيئية", "تنظيم الحفلات فقط", "الربح فقط"], answer: 1 },
+                
+                // === ثقافة عامة 2 ===
+                { q: "8. ما هو أكبر محيط في العالم ؟", options: ["الأطلسي", "الهندي", "المتجمد الشمالي", "الهادي"], answer: 3 },
+                { q: "9. من رسم الموناليزا ؟", options: ["مايكل أنجلو", "ليوناردو دافنشي", "بابلو بيكاسو", "فان جوخ"], answer: 1 },
+                
+                // === سؤال ممتع ===
+                { q: "10. شكون هو أفضل فريق باش تحقق الأفكار ديالك هاد العام ؟", options: ["Enactus ENSA Berrechid بطبيعة الحال ! 💛", "Enactus ENSA Berrechid طبعاً ! 🚀", "Enactus ENSA Berrechid بالتأكيد ! ⭐", "جميع الأجوبة صحيحة 😉"], answer: 3 }
+            ]
+        },
+        en: {
+            dir: 'ltr',
+            title: 'ENACTUS ARCADE CHALLENGE',
+            subtitle: '🎮 60 Seconds & 10 Questions to win the Grand Package (8/10 min)!',
+            namePH: 'First & Last Name',
+            filierePH: 'Major / Department (ex: CS, AP...)',
+            btnStart: 'START GAME 🚀',
+            resultTitle: 'Challenge Over!',
+            btnNext: 'NEXT PLAYER 🔄',
+            winMsg: '🏆 WINNER! Score: ',
+            consoMsg: '👏 GOOD TRY! Score: ',
+            timeOutMsg: '⏰ TIME UP! Score: ',
+            winReward: '🎁 You win the BIG ENACTUS PACKAGE (Snack + Candy + Sticker)!',
+            consoReward: '🍬 You win the MINI PACKAGE (Candy + Sticker)!',
+            alertMsg: 'Please fill in your name and major!',
+            progressText: 'Question ',
+            scoreText: 'Score: ',
+            questions: [
+                // === GENERAL KNOWLEDGE ===
+                { q: "1. What is the capital of Australia?", options: ["Sydney", "Melbourne", "Canberra", "Perth"], answer: 2 },
+                { q: "2. How many continents are there on Earth?", options: ["5", "6", "7", "8"], answer: 2 },
+                
+                // === FOOTBALL ===
+                { q: "3. Who won the 2022 World Cup?", options: ["France", "Brazil", "Argentina", "Germany"], answer: 2 },
+                { q: "4. How many players are on a football team on the field?", options: ["9", "10", "11", "12"], answer: 2 },
+                { q: "5. Which country has won the most World Cups?", options: ["Germany", "Italy", "Brazil", "Argentina"], answer: 2 },
+                
+                // === ENACTUS ===
+                { q: "6. What does 'ENACTUS' stand for?", options: ["Entrepreneurship - Action - Us", "Energy - Action - University", "Enterprise - Activity - Social", "Education - Action - University"], answer: 0 },
+                { q: "7. What is the main goal of Enactus projects?", options: ["Create video games", "Solve social & environmental issues", "Only host parties", "Make profit only"], answer: 1 },
+                
+                // === GENERAL KNOWLEDGE 2 ===
+                { q: "8. What is the largest ocean in the world?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], answer: 3 },
+                { q: "9. Who painted the Mona Lisa?", options: ["Michelangelo", "Leonardo da Vinci", "Pablo Picasso", "Vincent van Gogh"], answer: 1 },
+                
+                // === FUN QUESTION ===
+                { q: "10. Which team is best to turn your ideas into reality this year?", options: ["Enactus ENSA Berrechid of course! 💛", "Enactus ENSA Berrechid obviously! 🚀", "Enactus ENSA Berrechid absolutely! ⭐", "All answers are correct 😉"], answer: 3 }
+            ]
+        }
+    };
+
+    function changeLanguage(lang) {
+        currentLang = lang;
+        var langData = quizData[lang];
+
+        document.documentElement.dir = langData.dir;
+        
+        var btns = document.querySelectorAll('.lang-btn');
+        btns.forEach(function(b) { b.classList.remove('active'); });
+        document.getElementById('btn-lang-' + lang).classList.add('active');
+
+        document.getElementById('txt-title').innerText = langData.title;
+        document.getElementById('txt-subtitle').innerText = langData.subtitle;
+        document.getElementById('userName').placeholder = langData.namePH;
+        document.getElementById('userFiliere').placeholder = langData.filierePH;
+        document.getElementById('btn-start').innerText = langData.btnStart;
+        document.getElementById('txt-result-title').innerText = langData.resultTitle;
+        document.getElementById('btn-next').innerText = langData.btnNext;
+    }
+
+    function startQuiz() {
+        var name = document.getElementById('userName').value.trim();
+        var filiere = document.getElementById('userFiliere').value.trim();
+
+        if (name === "" || filiere === "") {
+            alert(quizData[currentLang].alertMsg);
+            return;
+        }
+
+        playBeep(600, 'sine', 0.1);
+
+        document.getElementById('step-intro').classList.add('hidden');
+        document.getElementById('step-quiz').classList.remove('hidden');
+        
+        timeLeft = TOTAL_TIME;  // Réinitialiser à 60 secondes
+        currentQ = 0;
+        score = 0;
+        updateProgress();
+        startTimer();
+        showQuestion();
+    }
+
+    function updateProgress() {
+        document.getElementById('progress-text').innerText = 
+            quizData[currentLang].progressText + (currentQ + 1) + "/" + TOTAL_QUESTIONS;
+        document.getElementById('score-display').innerText = 
+            quizData[currentLang].scoreText + score;
+    }
+
+    function startTimer() {
+        var timerBar = document.getElementById('timer-bar');
+        var timerText = document.getElementById('timer-text');
+        
+        // Réinitialiser la barre
+        timerBar.style.width = "100%";
+        timerText.innerText = "⏱️ " + timeLeft + "s";
+        
+        timerInterval = setInterval(function() {
+            timeLeft--;
+            timerText.innerText = "⏱️ " + timeLeft + "s";
+            timerBar.style.width = ((timeLeft / TOTAL_TIME) * 100) + "%";
+
+            // Changer la couleur quand il reste peu de temps
+            if (timeLeft <= 10) {
+                timerBar.style.background = "#e74c3c";
+                timerText.style.color = "#e74c3c";
+            } else {
+                timerBar.style.background = "#FFC20E";
+                timerText.style.color = "#FFC20E";
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                showResult(true);
+            }
+        }, 1000);
+    }
+
+    function showQuestion() {
+        var qData = quizData[currentLang].questions[currentQ];
+        document.getElementById('question-text').innerText = qData.q;
+        var container = document.getElementById('options-container');
+        container.innerHTML = '';
+
+        qData.options.forEach(function(opt, index) {
+            var btn = document.createElement('button');
+            btn.className = 'btn option-btn';
+            btn.innerText = opt;
+            btn.onclick = function() { selectAnswer(index); };
+            container.appendChild(btn);
+        });
+
+        updateProgress();
+    }
+
+    function selectAnswer(index) {
+        var correctIndex = quizData[currentLang].questions[currentQ].answer;
+        
+        // Vérifier la réponse
+        if (index === correctIndex) {
+            playCorrectSound();
+            score++;
+        } else {
+            playWrongSound();
+        }
+
+        currentQ++;
+        
+        if (currentQ < quizData[currentLang].questions.length) {
+            // Animation de transition
+            setTimeout(function() {
+                showQuestion();
+            }, 300);
+        } else {
+            clearInterval(timerInterval);
+            showResult(false);
+        }
+    }
+
+    function showResult(isTimeOut) {
+        document.getElementById('step-quiz').classList.add('hidden');
+        document.getElementById('step-result').classList.remove('hidden');
+
+        var langData = quizData[currentLang];
+        var msgBox = document.getElementById('result-message');
+        var rewardText = document.getElementById('reward-text');
+
+        // Condition de victoire : 8/10 minimum
+        if (score >= 8 && !isTimeOut) {
+            playWinSound();
+            msgBox.className = "result-box win";
+            msgBox.innerText = langData.winMsg + score + "/" + TOTAL_QUESTIONS;
+            rewardText.innerText = langData.winReward;
+        } else {
+            playLoseSound();
+            msgBox.className = "result-box consolation";
+            var prefix = isTimeOut ? langData.timeOutMsg : langData.consoMsg;
+            msgBox.innerText = prefix + score + "/" + TOTAL_QUESTIONS;
+            rewardText.innerText = langData.consoReward;
+        }
+    }
+
+    function resetQuiz() {
+        playBeep(500, 'sine', 0.1);
+        currentQ = 0;
+        score = 0;
+        timeLeft = TOTAL_TIME;
+        document.getElementById('userName').value = '';
+        document.getElementById('userFiliere').value = '';
+        document.getElementById('timer-bar').style.width = "100%";
+        document.getElementById('timer-bar').style.background = "#FFC20E";
+        document.getElementById('timer-text').style.color = "#FFC20E";
+        document.getElementById('step-result').classList.add('hidden');
+        document.getElementById('step-intro').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
