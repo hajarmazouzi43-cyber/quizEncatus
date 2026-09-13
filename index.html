@@ -26,7 +26,7 @@
         .lang-btn { background: transparent; color: #FFC20E; border: 1px solid #FFC20E; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; }
         .lang-btn.active, .lang-btn:hover { background: #FFC20E; color: #002B49; }
 
-        /* Logo - SANS ARRIÈRE-PLAN */
+        /* Logo SANS ARRIÈRE-PLAN */
         .logo-container { 
             display: flex; 
             justify-content: center; 
@@ -40,6 +40,12 @@
             background: transparent;
             mix-blend-mode: lighten;
             filter: brightness(1.1);
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes logoGlow {
+            0%, 100% { filter: brightness(1.1) drop-shadow(0 0 5px rgba(255, 194, 14, 0.3)); }
+            50% { filter: brightness(1.2) drop-shadow(0 0 15px rgba(255, 194, 14, 0.6)); }
         }
 
         h1 { color: #FFC20E; margin-bottom: 5px; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
@@ -79,16 +85,6 @@
             0% { transform: scale(1); }
             100% { transform: scale(1.03); }
         }
-
-        /* Animation pour le logo */
-        .logo-container img {
-            animation: logoGlow 3s ease-in-out infinite;
-        }
-        
-        @keyframes logoGlow {
-            0%, 100% { filter: brightness(1.1) drop-shadow(0 0 5px rgba(255, 194, 14, 0.3)); }
-            50% { filter: brightness(1.2) drop-shadow(0 0 15px rgba(255, 194, 14, 0.6)); }
-        }
     </style>
 </head>
 <body>
@@ -101,7 +97,7 @@
         <button class="lang-btn" id="btn-lang-en" onclick="changeLanguage('en')">EN</button>
     </div>
 
-    <!-- Logo SANS ARRIÈRE-PLAN -->
+    <!-- Logo avec logo.jpg -->
     <div class="logo-container">
         <img src="logo.jpg" alt="Enactus ENSA Berrechid" id="logo-img">
     </div>
@@ -142,12 +138,11 @@
     var currentLang = 'fr';
     var currentQ = 0;
     var score = 0;
-    var timeLeft = 60;  // ⏱️ Augmenté à 60 secondes
+    var timeLeft = 60;
     var timerInterval = null;
-    var TOTAL_TIME = 60;  // Total du temps
-    var TOTAL_QUESTIONS = 10;  // Nombre total de questions
+    var TOTAL_TIME = 60;
+    var TOTAL_QUESTIONS = 10;
 
-    // Synthèse sonore Web Audio API
     var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
     function playBeep(freq, type, duration) {
@@ -204,24 +199,15 @@
             progressText: 'Question ',
             scoreText: 'Score: ',
             questions: [
-                // === CULTURE GÉNÉRALE ===
                 { q: "1. Quelle est la capitale de l'Australie ?", options: ["Sydney", "Melbourne", "Canberra", "Perth"], answer: 2 },
                 { q: "2. Combien de continents y a-t-il sur Terre ?", options: ["5", "6", "7", "8"], answer: 2 },
-                
-                // === FOOTBALL ===
                 { q: "3. Qui a remporté la Coupe du Monde 2022 ?", options: ["France", "Brésil", "Argentine", "Allemagne"], answer: 2 },
                 { q: "4. Combien de joueurs dans une équipe de football sur le terrain ?", options: ["9", "10", "11", "12"], answer: 2 },
                 { q: "5. Quel pays a remporté le plus de Coupes du Monde ?", options: ["Allemagne", "Italie", "Brésil", "Argentine"], answer: 2 },
-                
-                // === ENACTUS ===
                 { q: "6. Que signifie le terme 'ENACTUS' ?", options: ["Entrepreneurship - Action - Us", "Énergie - Action - Université", "Entreprise - Activité - Social", "Éducation - Action - Université"], answer: 0 },
                 { q: "7. Quel est l'objectif principal d'Enactus ?", options: ["Créer des jeux vidéo", "Résoudre des problèmes sociaux et environnementaux", "Organiser uniquement des fêtes", "Faire du profit uniquement"], answer: 1 },
-                
-                // === CULTURE GÉNÉRALE 2 ===
                 { q: "8. Quel est le plus grand océan du monde ?", options: ["Atlantique", "Indien", "Arctique", "Pacifique"], answer: 3 },
                 { q: "9. Qui a peint la Joconde ?", options: ["Michel-Ange", "Léonard de Vinci", "Pablo Picasso", "Vincent van Gogh"], answer: 1 },
-                
-                // === QUESTION FUN ===
                 { q: "10. Quelle est la meilleure équipe pour concrétiser tes idées cette année ?", options: ["Enactus ENSA Berrechid bien sûr ! 💛", "Enactus ENSA Berrechid évidemment ! 🚀", "Enactus ENSA Berrechid absolument ! ⭐", "Toutes les réponses sont correctes 😉"], answer: 3 }
             ]
         },
@@ -243,24 +229,15 @@
             progressText: 'السؤال ',
             scoreText: 'النتيجة: ',
             questions: [
-                // === ثقافة عامة ===
                 { q: "1. ما هي عاصمة أستراليا ؟", options: ["سيدني", "ملبورن", "كانبرا", "بيرث"], answer: 2 },
                 { q: "2. كم عدد القارات في العالم ؟", options: ["5", "6", "7", "8"], answer: 2 },
-                
-                // === كرة القدم ===
                 { q: "3. من فاز بكأس العالم 2022 ؟", options: ["فرنسا", "البرازيل", "الأرجنتين", "ألمانيا"], answer: 2 },
                 { q: "4. كم عدد اللاعبين في فريق كرة القدم داخل الملعب ؟", options: ["9", "10", "11", "12"], answer: 2 },
                 { q: "5. أي دولة فازت بأكبر عدد من كؤوس العالم ؟", options: ["ألمانيا", "إيطاليا", "البرازيل", "الأرجنتين"], answer: 2 },
-                
-                // === إيناكتوس ===
                 { q: "6. ماذا يعني مصطلح 'ENACTUS' ؟", options: ["Entrepreneurship - Action - Us", "Energy - Action - University", "Enterprise - Activity - Social", "Education - Action - University"], answer: 0 },
                 { q: "7. ما هو الهدف الرئيسي لمشاريع إيناكتوس ؟", options: ["تطوير ألعاب الفيديو", "حل المشاكل الاجتماعية والبيئية", "تنظيم الحفلات فقط", "الربح فقط"], answer: 1 },
-                
-                // === ثقافة عامة 2 ===
                 { q: "8. ما هو أكبر محيط في العالم ؟", options: ["الأطلسي", "الهندي", "المتجمد الشمالي", "الهادي"], answer: 3 },
                 { q: "9. من رسم الموناليزا ؟", options: ["مايكل أنجلو", "ليوناردو دافنشي", "بابلو بيكاسو", "فان جوخ"], answer: 1 },
-                
-                // === سؤال ممتع ===
                 { q: "10. شكون هو أفضل فريق باش تحقق الأفكار ديالك هاد العام ؟", options: ["Enactus ENSA Berrechid بطبيعة الحال ! 💛", "Enactus ENSA Berrechid طبعاً ! 🚀", "Enactus ENSA Berrechid بالتأكيد ! ⭐", "جميع الأجوبة صحيحة 😉"], answer: 3 }
             ]
         },
@@ -282,24 +259,15 @@
             progressText: 'Question ',
             scoreText: 'Score: ',
             questions: [
-                // === GENERAL KNOWLEDGE ===
                 { q: "1. What is the capital of Australia?", options: ["Sydney", "Melbourne", "Canberra", "Perth"], answer: 2 },
                 { q: "2. How many continents are there on Earth?", options: ["5", "6", "7", "8"], answer: 2 },
-                
-                // === FOOTBALL ===
                 { q: "3. Who won the 2022 World Cup?", options: ["France", "Brazil", "Argentina", "Germany"], answer: 2 },
                 { q: "4. How many players are on a football team on the field?", options: ["9", "10", "11", "12"], answer: 2 },
                 { q: "5. Which country has won the most World Cups?", options: ["Germany", "Italy", "Brazil", "Argentina"], answer: 2 },
-                
-                // === ENACTUS ===
                 { q: "6. What does 'ENACTUS' stand for?", options: ["Entrepreneurship - Action - Us", "Energy - Action - University", "Enterprise - Activity - Social", "Education - Action - University"], answer: 0 },
                 { q: "7. What is the main goal of Enactus projects?", options: ["Create video games", "Solve social & environmental issues", "Only host parties", "Make profit only"], answer: 1 },
-                
-                // === GENERAL KNOWLEDGE 2 ===
                 { q: "8. What is the largest ocean in the world?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], answer: 3 },
                 { q: "9. Who painted the Mona Lisa?", options: ["Michelangelo", "Leonardo da Vinci", "Pablo Picasso", "Vincent van Gogh"], answer: 1 },
-                
-                // === FUN QUESTION ===
                 { q: "10. Which team is best to turn your ideas into reality this year?", options: ["Enactus ENSA Berrechid of course! 💛", "Enactus ENSA Berrechid obviously! 🚀", "Enactus ENSA Berrechid absolutely! ⭐", "All answers are correct 😉"], answer: 3 }
             ]
         }
@@ -338,7 +306,7 @@
         document.getElementById('step-intro').classList.add('hidden');
         document.getElementById('step-quiz').classList.remove('hidden');
         
-        timeLeft = TOTAL_TIME;  // Réinitialiser à 60 secondes
+        timeLeft = TOTAL_TIME;
         currentQ = 0;
         score = 0;
         updateProgress();
@@ -357,7 +325,6 @@
         var timerBar = document.getElementById('timer-bar');
         var timerText = document.getElementById('timer-text');
         
-        // Réinitialiser la barre
         timerBar.style.width = "100%";
         timerText.innerText = "⏱️ " + timeLeft + "s";
         
@@ -366,7 +333,6 @@
             timerText.innerText = "⏱️ " + timeLeft + "s";
             timerBar.style.width = ((timeLeft / TOTAL_TIME) * 100) + "%";
 
-            // Changer la couleur quand il reste peu de temps
             if (timeLeft <= 10) {
                 timerBar.style.background = "#e74c3c";
                 timerText.style.color = "#e74c3c";
@@ -402,7 +368,6 @@
     function selectAnswer(index) {
         var correctIndex = quizData[currentLang].questions[currentQ].answer;
         
-        // Vérifier la réponse
         if (index === correctIndex) {
             playCorrectSound();
             score++;
@@ -413,7 +378,6 @@
         currentQ++;
         
         if (currentQ < quizData[currentLang].questions.length) {
-            // Animation de transition
             setTimeout(function() {
                 showQuestion();
             }, 300);
@@ -431,7 +395,6 @@
         var msgBox = document.getElementById('result-message');
         var rewardText = document.getElementById('reward-text');
 
-        // Condition de victoire : 8/10 minimum
         if (score >= 8 && !isTimeOut) {
             playWinSound();
             msgBox.className = "result-box win";
